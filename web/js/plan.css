@@ -1,0 +1,141 @@
+body {
+  font-size: 90%;  
+}
+
+div#right.shifted{
+   position: fixed;
+   left: 0;
+   width: 340px;
+   font-size: small;
+   z-index: 1000;
+   background-color: rgba(255, 255, 255, 0.8);
+   overflow: none;
+}
+
+div#main {
+   position: relative;
+}
+
+div#right {
+   position: fixed;
+   right: 0;
+   width: 340px;
+   font-size: small;
+   z-index: 1000;
+   background-color: rgba(255, 255, 255, 0.8);
+   overflow: none;
+}
+
+@media screen and (max-width: 800px) {
+    div#right {
+        position: static;
+        width: 100%;
+    }
+}
+
+ul, li {
+    list-style-type: none;
+    padding-left: 5px;
+}
+ul li:before{ content:"-"; position:relative; left:-5px;}
+ul li{ text-indent:-5px; }
+
+div#right .small {
+    font-size: smaller;
+}
+
+div.tt div {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.ui-tooltip {
+    font-size: 80%;
+    font-family: arial;
+}
+
+div.tt table { 
+    font-size: 70%;
+    border-collapse: collapse;
+}
+
+div.tt table td.tt2 { 
+    border: 1px solid #88dddd;
+}
+
+div.tt td, div.tt th { 
+    width: 5em;
+    margin: 0;
+    padding: 0;
+}
+
+div.tt th.tth {
+    padding-left: 1em;
+    text-align: left;
+}
+
+div.tt td { 
+    border: 1px solid #dddd88;
+}
+
+div.tt div.ttb {
+    position: absolute;
+    border:black solid 1px;
+    overflow: hidden;
+    background-color: #eeeeff;
+    font-size: 70%;
+    font-family: arial;
+    text-align: center;
+}
+
+button#actualiza {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    font-size: 80%;
+    font-family: arial;
+}
+
+table.tm {
+    border-collapse: collapse;
+    font-size: 80%;
+    padding: 0;
+    font-family: arial;
+    height: 100%;
+}
+
+table.tm td {
+    color: #aaaaaa;
+}
+table.tm tr td{
+    color: #aaaaaa;
+}
+table.tm tr td {
+    border: 1px solid white;
+}
+table.tm tr:hover td {
+    border: 1px solid blue;
+}
+table.tm tr.unavailable td{
+    color: #ffaaaa;
+    font-weight: bold;  
+}
+table.tm tr.selected td{
+    color: #77aa77;
+    font-weight: bold;
+}
+table.tm tr.compatible td{
+    color: black;
+}
+
+div#login input {
+    width: 100px;
+}
+
+span.creditos {
+    font-size: 50%;
+}
+
+td > select {
+    width: 100px;   
+}
