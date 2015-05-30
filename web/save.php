@@ -1,19 +1,12 @@
 <?php
 
 require('inc/util.php');
+initSession();
 
-if (isset($_POST["login"], $_POST["pass"], $_POST["sel"])) {
-    if (checkUser($_POST["login"], $_POST["pass"])) {
-        writeSave($_POST["login"], $_POST["sel"], $_POST["bad"]);
-        echo "updated OK.";
-    } elseif (createUser($_POST["login"], $_POST["pass"])) {
-        writeSave($_POST["login"], $_POST["sel"], $_POST["bad"]);
-        echo "created user & saved OK.";
-    } else {
-        header("HTTP/1.0 403 Forbidden");
-        echo "bad pass";
-    }
+if (isset($_SESSION['login'])) {
+    writeSave($_SESSION['login'], $_POST["sel"], $_POST["bad"], $_POST["int"]);
+    echo "updated OK.";
 } else {
     header("HTTP/1.0 403 Forbidden");
-    echo "expected login, pass, and selections";
+    echo "you are not logged in. Sorry mate.";
 }

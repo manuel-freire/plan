@@ -29,9 +29,9 @@ function readExcel($fname, $jsOutput) {
         . $startRow . ' to ' . $endRow . ', ' . $endCol . ' cols');
 
     // build a 2D array with all data-values
-    $d = [];
+    $d = array();
     for ($i = $startRow+1; $i < $endRow; $i++) {
-        $row = [];
+        $row = array();
         for ($j = 0; $j < $endCol; $j++) {
             $value = $sheet->getCell(chr(ord('A') + $j) . $i)->getValue();
             $row[] = mb_convert_encoding($value, "ISO-8859-1");

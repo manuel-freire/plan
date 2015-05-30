@@ -52,6 +52,7 @@ pa.Topic = function(line, id) {
     this.id = id;
     this.incompatible = [];
     this.compatible = [];
+	this.interes = [];
 
     // pushes slots into target, given time-strings
     // L: 10-12; M: 11-13 == [{L, 1000, 1200}, {M, 1100, 1300}]
@@ -93,7 +94,7 @@ pa.Topic = function(line, id) {
     // Gestión de proyectos software y metodologías = Gdpsym
     var nameParts = this.nombre.split(' ');
     var nameStarts = [];
-    for (i=0; i<nameParts.length && i<5; i++) {
+    for (i=0; i<nameParts.length && nameStarts.length<=5; i++) {
         if (pa.nameFixes[nameParts[i]] === undefined && nameParts[i][0] != '(') {
             nameStarts.push(nameParts[i][0]);
         } else {
@@ -101,6 +102,7 @@ pa.Topic = function(line, id) {
         }
     }
     this.acronym = nameStarts.join('') + ":" +id;
+	this.textAcronym = nameStarts.join('').toUpperCase();
 }
 pa.Topic.prototype = {
     compatibleWith: function(other) {
@@ -150,7 +152,8 @@ pa.Plan = function(menu) {
     this.menu = menu;
     this.chosen = [];
     this.incompatible = {};
-
+    this.interest = {};
+    
     this.reset();
 }
 pa.Plan.prototype = {
@@ -194,29 +197,50 @@ pa.Plan.prototype = {
 pa.List = function(id, selector, menu, plan) {
     this.menu = menu;
     this.plan = plan;
+    this.id = id;
 
     var dest = $(selector);
     function makeRow(id, t) {
+        var desc = t.curso + "-" + t.grupo + "-" + t.titulo + "-" + t.ctro + ": " + t.nombre;
         var row = $("<tr class='topic' id='" + id + t.id + "'><th>" + t.acronym + "</th>" +
-            "<td>" + t.curso + "-" + t.grupo + "-" + t.titulo + "-" + t.ctro + ": " + t.nombre + "</td>" +
-            "<td>" + t.pt + "/" + t.ay + "</td>" +
-            "<td>" + t.aula + "-" + t.edif + "</td>" +
-            "<td>" + t.horario + " (" + t.cuat + ")</td>" +
-            "<td><span class='x'>disponible</span>" +
-            "<td title='" + t.quien + "'>" + (t.quien === "" ? "" : "*") +
-            "</tr>\n");
+        "<td title='" + t.nombre + "'>" + t.curso + "-" + t.grupo + "-" + t.titulo + "-" + t.ctro + ": " +  t.textAcronym + "</td>" +
+        "<td>" + t.pt + "/" + t.ay + "</td>" +
+        "<td>" + t.aula + "-" + t.edif + "</td>" +
+        "<td>" + t.horario + " (" + t.cuat + ")</td>" +
+        "<td title='" + (t.quien === "" ? "(no asignada)" : t.quien) +
+            " -- haz click aquí para cambiar disponibilidad" + 
+            "' class='x'>" + (t.quien === "" ? "&nbsp;" : "*") + "</td>" +
+            "<td title='" + t.interes.join(",") + " (Haz click aquí para cambiar tu interés)" + 
+        "' class='i'>" + t.interes.length +
+        "</tr>\n");
         return row;
+    }
+    
+    this.refreshTooltip = function(topic, login) {
+        var row = this.list.find("#" + this.id + topic.id);
+        var cell = row.find("td.i");
+        var topicTooltip = topic.interes.join(",") +                 
+                " (Haz click aquí para cambiar tu interés)";
+        cell.attr('title', topicTooltip);
+        var popularity = topic.interes.length;
+        if (topic.interes.indexOf(login)>=0) {
+            cell.text(login + (popularity == 1 ? "" : "+" + (popularity-1)));
+            row.removeClass("notint");
+        } else {
+            cell.text(popularity == 0 ? "-" : popularity);
+            row.addClass("notInt");
+        }
     }
 
     this.list = $("<table class='tm' id='" + id + "'><thead><tr>"
         + "<th title='Abreviatura (generada automáticamente, en formato acronimo:nº de fila)'>abrev</th>"
-        + "<th>descripción</th>"
+		+ "<th title='Plan, grupo y nombre de la asignatura'>grupo y nombre</th>"
         + "<th title='Créditos, en formato teoría/prácticas'>creditos</th>"
         + "<th title='Aula o laboratorio donde se imparte'>lugar</th>"
         + "<th title='Entre paréntesis, el cuatrimestre'>horario</th>"
-        + "<th title='Disponibilidad; ojo, no tiene en cuenta reservas'>disp?</th>"
-        + "<th title='Quien la tiene seleccionada; usa el cursor para ver el nombre'>q</th>"
-        + "</tr></thead><tbody>\n"
+		+ "<th title='Quien la tiene seleccionada; usa el cursor para ver el nombre. Ojo, no tiene en cuenta reservas'>Quién</th>"
+		+ "<th title='A quién le gustaría darla. Ojo, puede que los interesados acaben por hacer otra elección, y puede que no-interesados sí la cojan'>Interés</th>"		
+		+ "</tr></thead><tbody>\n"
         + "</tbody></table>");
     for (var i=0; i<menu.topics.length; i++) {
         var row = makeRow(id, menu.topics[i])

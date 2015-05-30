@@ -26,13 +26,26 @@ div#right {
    overflow: none;
 }
 
+#formularioLogin {
+    width: 500px;
+}
+
+#formularioLogin label {
+    width: 100%;
+}
+
+#formularioLogin input {
+    margin-left: 100px;
+}
+
+/*
 @media screen and (max-width: 800px) {
     div#right {
         position: static;
         width: 100%;
     }
 }
-
+*/
 ul, li {
     list-style-type: none;
     padding-left: 5px;

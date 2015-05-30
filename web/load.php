@@ -12,6 +12,14 @@ if (isset($_GET["login"])) {
         echo "bad user";
     }
 } else {
-    header("HTTP/1.0 403 Bad user");
-    echo "no user specified";
+    $found=array();
+	if ($handle = opendir($config['SAVE_DIR'])) {
+        while (false !== ($entry = readdir($handle))) {
+            if ($entry != '.' && $entry != '..' && $entry != '.htaccess') {
+                $found[] = '"' . $entry . '":' . readString($config['SAVE_DIR'], $entry);
+            }
+        }
+        closedir($handle);
+    }
+    echo '{' . join($found, ',') . '}';
 }

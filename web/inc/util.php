@@ -8,27 +8,29 @@ function initSession() {
     session_set_cookie_params($config['cookie_timeout'], $config['cookie_path']);
     session_name($config['cookie_name']);
     session_start();    
-    if (isset($_POST['logout'])) {
+    if (isset($_POST['logout']) || isset($_GET['logout'])) {
         error_log("closed session for " . $_SESSION['login'] . "/" . $_SESSION['admin']);
         echo 'Sesion cerrada.';
         session_destroy();        
         exit();
     }    
-    if (isset($_POST['pass'])) {
+    if (isset($_POST['login'], $_POST['pass'])) {
         if ($_POST['pass']===$config['ADMIN_PASS']) {
             $_SESSION['admin'] = true;
             error_log('admin logged in');
+        } 
+        
+        if (checkUser($_POST['login'], $_POST['pass'])) {                
+            error_log('repeat entry for: ' . $_POST['login']);
+            $_SESSION['login'] = escapeLogin($_POST['login']);
+        } elseif (createUser($_POST['login'], $_POST['pass'])) {
+            error_log('first entry for: ' . $_POST['login']);
+            $_SESSION['login'] = escapeLogin($_POST['login']);
         } else {
-            error_log('not admin: ' . $_POST['pass']);
+            error_log('bad pass for: ' . $_POST['login']);
+            $_SESSION['error'] = "Usuario ya existe con otra contraseña. Invéntate otro.";
         }
-        if (isset($_POST['login'])) {
-            if (checkUser($_POST['login'], $_POST['pass'])) {                
-                $_SESSION['login'] = escapeLogin($_SESSION['login']);
-            } elseif (createUser($_POST['login'], $_POST['pass'])) {
-                $_SESSION['login'] = escapeLogin($_SESSION['login']);
-            }
-        }
-    }    
+    }
 }
 
 function writeString($folder, $fname, $s) {
@@ -41,6 +43,7 @@ function readString($folder, $fname) {
     $f = fopen($folder . '/' . $fname, 'r');
     $s = fread($f, 1024*1024);
     fclose($f);
+    if ($s === "") $s = "{}";
     return $s;
 }
 
@@ -80,10 +83,10 @@ function createUser($login, $pass) {
 }
 
 // writes a save-file for an (already authenticated) user 
-function writeSave($login, $sel, $bad) {
+function writeSave($login, $sel, $bad, $int) {
     global $config;    
     $cleanLogin = escapeLogin($login);    
-    $data = json_encode(array('sel' => $sel, 'bad' => $bad));     
+    $data = json_encode(array('sel' => $sel, 'bad' => $bad, 'int' => $int));     
     writeString($config['SAVE_DIR'], $cleanLogin, $data);
 }
 
