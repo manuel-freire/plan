@@ -1,7 +1,7 @@
-<?php 
+<?php
 
 // declare the config global array, where all deployment-specific things live
-$config = [];
+$config = array();
 
 // this is appended to passwords before hashing; CHANGE IT for your installation
 $config['SHA1_PEPPER'] = "security_by_obscurity";
