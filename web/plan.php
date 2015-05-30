@@ -2,6 +2,10 @@
 
 require('inc/util.php');
 initSession();
+if ( ! isset($_SESSION["login"])) {
+    header("Location: index.php");
+    die();
+}
 
 ?>
 
@@ -59,7 +63,8 @@ $(function() {
                 } 
                 if (user !== login) continue;
                 console.log("Loading other data for ", user, person);
-                    
+                $("#ultimo_guardado").text(person.date);
+    
                 // usuario cargando sus propios datos
                 if (person.sel != undefined && person.sel != null) {
                     for (var i=0; i<person.sel.length; i++) {
@@ -86,7 +91,8 @@ $(function() {
                         cambiaDisponibilidad(tr, topic, true);
                     }
                 }
-            }            
+            }          
+            toggleSaved(true);
             refrescaInteres();
         });
     }     
@@ -96,6 +102,11 @@ $(function() {
     $("#tl tbody>tr").each(function() {
         $(this).addClass("compatible");
     });
+    
+    function toggleSaved(saved) {
+         if ( ! saved) $("#salvar").removeClass("saved");
+         else $("#salvar").addClass("saved");
+    }
 
     function cambiaDisponibilidad(tr, topic, soloAInaccesible, mismoUsuario) {
         if (mismoUsuario === true) {
@@ -153,6 +164,7 @@ $(function() {
         });
         pa.fixTotal(".totales", plan);
         actualizaCompatibles();
+        toggleSaved(false)
         return false;
     }
     
@@ -167,6 +179,7 @@ $(function() {
             topic.interes.push(login);
             plan.interest[topic.id] = true;
         }
+        toggleSaved(false)
         refrescaInteres();
     }
 
@@ -239,21 +252,36 @@ $(function() {
         var post = {"sel": sel, "bad": bad, "int": int};
         console.debug(post);
         $.post("save.php", post, function(data) {
-            $("#ultimo_guardado").text(("" + new Date()).split(" ")[4]);
+            $("#ultimo_guardado").text("Hoy, " +
+                ("" + (new Date())).split(" ")[4]);
+            toggleSaved(true)
             console.log(data);
         });
     });
-
+    
+    // boton de "ocultar_ay"
+    $("#ocultar_ay").click(function() {
+        $("div#ayuda ul").toggle();
+    });
+    
     // boton de "ocultar_horarios"
-    $("#ocultar_horarios").click(function() {
-        $("#tt1,#tt2,.ttd").toggle();
-        if ($("#tt1").is(':visible')) {
+    $("#ocultar_h1").click(function() {
+        $("#tt1,.ttd").toggle();
+        if ($("#tt1").is(':visible') || $("#tt2").is(':visible')) {
+            seleccionaAsignatura();
+        }
+    });
+    $("#ocultar_h2").click(function() {
+        $("#tt2,.ttd").toggle();
+        if ($("#tt1").is(':visible') || $("#tt2").is(':visible')) {
             seleccionaAsignatura();
         }
     });
 
     $(document).tooltip({show: null, hide: null});
 
+    $("#tt1,#tt2").hide();
+    
     $("#tl tbody>tr").each(function(i, o) {
         var tr = $(o);
         var topic = tr.data("topic");
@@ -274,35 +302,41 @@ $(function() {
 			echo "<i>No registrado. <a href='index.php'>Ir al registro</a></i>";
 		}		
 	?><br>
-        <i>Datos refrescados: <span id="last_version"/> </i>
-        <div id="filter">
-            Ocultar asignaturas que:
-            <button id="bf_interes">NO me interesan</option>
-            <button id="bf_libres">están asignadas</button>
-            <button id="bf_mias">NO tengo en mi horario</button>
-            <b>Ayuda</b>
-            <ul>
-                <li>Usa el cursor para ver detalles</li>
-                <li>Click en columna <i>Quién</i>: cambia disponibilidad.                
-                <li>Click en columna <i>Interés</i>: cambia interés.                
-                <li>Click en resto de fila: añade/retira asignatura de tu horario. 
-                    (Añadir falla si no-disponible o hay conflicto horario)
-            </ul>
-        </div>
-
-        <button id="ocultar_horarios">ocultar/mostrar horarios</button> &nbsp;
-        <div id="hc1"></div>
-        <div id="hc2"></div>
-        Total créditos: <span class='totales'></span>&nbsp;
-
-        <hr/>
-
+        <i>Fichero base: <span id="last_version"/> </i>
         <div id="login">           
             <button id="salvar"
                 title="Salva tus intereses, horario y lista de 'no-disponibles' actual, de forma
-                que se restaure automáticamente cuando vuelvas">salvar cambios</button>
-            (salvado a las <span id="ultimo_guardado">?</span>)
+                que se restaure automáticamente cuando vuelvas. Si está en rojo, hay cambios sin salvar;
+                Si está en verde, no has cambiado nada desde la última vez que salvaste.">salvar cambios</button>
+            (salvado: <span id="ultimo_guardado">NUNCA</span>)
         </div>
+
+        <div id="filter">
+            <h4>Ocultar asignaturas</h4>
+            <button id="bf_interes">no interesantes</option>
+            <button id="bf_libres">ya asignadas</button>
+            <button id="bf_mias">no seleccionadas</button>
+        </div>
+        <div id="ayuda">
+            <h4>Ayuda</h4>
+            <button id="ocultar_ay">ocultar/mostrar</button>
+            <ul>
+                <li>Usa el cursor para ver detalles. Casi todos los campos tienen ayuda emergente si pones el cursor encima o los seleccionas en tu dispositivo táctil.</li>
+                <li>Click en columna <i>Quién</i>: cambia disponibilidad. Las asignaturas "en rojo" no están disponibles para añadirlas a tu horario, a no ser que las habilites de esta manera.               
+                <li>Click en columna <i>Interés</i>: marca (o desmarca) interés por una asignatura. Una vez que salves, otros podrán ver todas las asignaturas en las que estás interesado.  
+                <li>Click en resto de fila: añade o retira una asignatura de tu horario. Falla si no está disponible ó hay un conflicto horario.
+            </ul>
+        </div>
+        <div id="horario">
+            <h4>Horarios</h4>
+
+        1º Cuatrimestre <button id="ocultar_h1">ocultar/mostrar</button> &nbsp;
+        <div id="hc1"></div>
+        2º Cuatrimestre <button id="ocultar_h2">ocultar/mostrar</button> &nbsp;
+        <div id="hc2"></div>
+        Total créditos: <span class='totales'></span>&nbsp;
+        </div>
+        
     </div>
 
     <div id="main">

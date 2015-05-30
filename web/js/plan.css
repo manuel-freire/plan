@@ -2,16 +2,6 @@ body {
   font-size: 90%;  
 }
 
-div#right.shifted{
-   position: fixed;
-   left: 0;
-   width: 340px;
-   font-size: small;
-   z-index: 1000;
-   background-color: rgba(255, 255, 255, 0.8);
-   overflow: none;
-}
-
 div#main {
    position: relative;
 }
@@ -31,11 +21,22 @@ div#right {
 }
 
 #formularioLogin label {
-    width: 100%;
+    width: 100%;    
 }
 
 #formularioLogin input {
     margin-left: 100px;
+}
+
+button {
+    font-size: small;
+}
+
+button#salvar {
+    border: 2px solid red;
+}
+button#salvar.saved {
+    border: 2px solid green;
 }
 
 /*

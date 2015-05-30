@@ -86,7 +86,8 @@ function createUser($login, $pass) {
 function writeSave($login, $sel, $bad, $int) {
     global $config;    
     $cleanLogin = escapeLogin($login);    
-    $data = json_encode(array('sel' => $sel, 'bad' => $bad, 'int' => $int));     
+    $data = json_encode(array('sel' => $sel, 'bad' => $bad, 'int' => $int, 
+        'date' => date("M d H:i:s")));     
     writeString($config['SAVE_DIR'], $cleanLogin, $data);
 }
 
@@ -96,7 +97,7 @@ function prettyList($folder) {
     if ($handle = opendir($folder)) {
         while (false !== ($entry = readdir($handle))) {
             if ($entry != '.' && $entry != '..' && $entry != '.htaccess') {
-                $found[] = array($entry, date('d/m H:i:s', filemtime($folder . '/' . $entry)));
+                $found[] = array($entry, date('M-d H:i:s', filemtime($folder . '/' . $entry)));
             }
         }
         closedir($handle);

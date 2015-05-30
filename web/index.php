@@ -20,15 +20,10 @@ if (isset($_SESSION["login"])) {
     <script type="text/javascript" src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
     <link rel="stylesheet" href="js/lib/ui-lightness/jquery-ui-1.10.3.custom.min.css" type="text/css"/>
     <link rel="stylesheet" href="js/plan.css" type="text/css"/>
-
-<script type="text/javascript">
-$(function() {
-    // nada, zero, zilch, nothing
-});
-</script>
-
 </head>
 <body>
+        <h1>Registro / Login</h1>
+
         <form id="formularioLogin" method="POST">
             <fieldset>
                 <label for="login">Login (eg.: prefijo de tu correo UCM antes de la @)</label>

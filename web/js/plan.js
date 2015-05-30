@@ -275,7 +275,6 @@ pa.TimeTable = function(id, selector, cuat, plan) {
     }
 
     this.tt = $("<div id='" + id + "' class='tt'><div class='ttinner'>\n"
-        + "Cuatrimestre " + cuat + "\n"
         + "<table><thead><tr>"
         + "<th>L</th><th>M</th><th>X</th><th>J</th><th>V</th>"
         + "<th></th>"
