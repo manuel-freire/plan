@@ -10,7 +10,8 @@ function initSession() {
     session_start();    
     if (isset($_POST['logout']) || isset($_GET['logout'])) {
         error_log("closed session for " . $_SESSION['login'] . "/" . $_SESSION['admin']);
-        echo 'Sesion cerrada.';
+        echo '<html><head><title>Logout</title></head>' . 
+            '<body>Sesion cerrada. <a href="index.php">Volver</a></body></html>';
         session_destroy();        
         exit();
     }    

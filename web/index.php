@@ -20,6 +20,15 @@ if (isset($_SESSION["login"])) {
     <script type="text/javascript" src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
     <link rel="stylesheet" href="js/lib/ui-lightness/jquery-ui-1.10.3.custom.min.css" type="text/css"/>
     <link rel="stylesheet" href="js/plan.css" type="text/css"/>
+    
+    <script type="text/javascript" src="data/latest.js"></script>
+<script type="text/javascript">
+$(function() {
+//    for (var name in personNames) {
+//        $("#login").append("<option>" + name + "</option>");
+//    }        
+});
+</script>
 </head>
 <body>
         <h1>Registro / Login</h1>
@@ -27,7 +36,10 @@ if (isset($_SESSION["login"])) {
         <form id="formularioLogin" method="POST">
             <fieldset>
                 <label for="login">Login (eg.: prefijo de tu correo UCM antes de la @)</label>
+<!--                <select id="login" name="login" required>
+                </select>-->
                 <input id="login" name="login" type="text" required/>
+                <br>                
                 <br>
                 <label for="pass">Contraseña (no uses una sensible)</label>
                 <input title="No uses una contraseña sensible" type="password" name="pass" id="l_pass" required />

@@ -28,20 +28,29 @@ function readExcel($fname, $jsOutput) {
     error_log('read excel ' . $fname . ': data at rows '
         . $startRow . ' to ' . $endRow . ', ' . $endCol . ' cols');
 
-    // build a 2D array with all data-values
+    // build a 2D array with all data-values;
+    // also store all person-names in a map
     $d = array();
+    $people = array();
     for ($i = $startRow+1; $i < $endRow; $i++) {
         $row = array();
+        $isoValue = "";
         for ($j = 0; $j < $endCol; $j++) {
             $value = $sheet->getCell(chr(ord('A') + $j) . $i)->getValue();
-            $row[] = mb_convert_encoding($value, "ISO-8859-1");
+            $isoValue = mb_convert_encoding($value, "ISO-8859-1");
+            $row[] = $isoValue;
         }
         $d[] = $row;
+        if ($isoValue !== "") {
+            $people[$isoValue] = true;
+        }
     }
     
     $f = fopen($jsOutput, 'w');    
-    fwrite($f, 'var data=' . json_encode($d) . ";\n" .
-        'var metadata="' . $fname . "\";\n");
+    fwrite($f, 
+        'var data=' . json_encode($d, JSON_PRETTY_PRINT) . ";\n" .
+        'var metadata="' . $fname . "\";\n" .
+        'var personNames=' . json_encode($people, JSON_PRETTY_PRINT) . ";\n");
     fclose($f);
     
     set_time_limit(30);

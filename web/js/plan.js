@@ -17,7 +17,7 @@ pa.Slot = function(cuat, day, start, end) {
 pa.Slot.prototype = {
     intersects: function(other) {
         return (this.cuat == other.cuat && this.day == other.day) &&
-            ! (this.end <= other.start || other.end <= this.start);
+        ! (this.end <= other.start || other.end <= this.start);
     }
 }
 
@@ -31,10 +31,15 @@ pa.nameFixes = {
 };
 
 /**
+ * all encountered names (fixme: edit-distance in JS for partial matching?)
+ */
+pa.peopleNames = {};
+
+/**
  * a topic is a line in Luis' spreadsheet
  * Ctro  Curso  Título Asignatura Grp Cuat PT AY Horario Aula Edif. Quién
  */
-pa.Topic = function(line, id) {
+pa.Topic = function(line, id) {        
     this.ctro = line[0];
     this.curso = line[1];
     this.titulo = line[2];
@@ -42,32 +47,43 @@ pa.Topic = function(line, id) {
     this.grupo = line[4] || "";
     this.cuat = line[5] || "";
     this.pt = line[6] || 0;
-	if (this.pt.length > 0) this.pt = this.pt.replace(",", ".");
+    if (this.pt.length > 0) this.pt = this.pt.replace(",", ".");
     this.ay = line[7] || 0;
-	if (this.ay.length > 0) this.ay = this.ay.replace(",", ".");
-	this.horario = line[8] || "";
+    if (this.ay.length > 0) this.ay = this.ay.replace(",", ".");
+    this.horario = line[8] || "";
     this.aula = line[9] || "";
     this.edif = line[10] || "";
     this.quien = line[11] || "";
     this.id = id;
     this.incompatible = [];
     this.compatible = [];
-	this.interes = [];
-
+    this.interes = [];
+    
+    pa.peopleNames[this.quien] = true;
+    
+    // console.log(line, this);
+    
     // pushes slots into target, given time-strings
+    // V: 11:13 == V: 11-13
     // L: 10-12; M: 11-13 == [{L, 1000, 1200}, {M, 1100, 1300}]
     // LMX: 10-12 == L, M,X == [{L, 1000, 1200}, ...
     // LMX: 10:30-12:30 == L, M,X == [{L, 1030, 1230}, ...
     function createSlots(cuat, time, target) {
         var s = time.split(':');
         if (s.length > 2) {
-        s[1] = s.slice(1).join('');
+            s[1] = s.slice(1).join('');
         }
         if (s.length >= 2) {
             var t = s[1].trim().split('-');
+            if (t.length == 1 && s.length == 3) {
+                // bugfix for V: 11:13 ==> V: 11-13
+                time = s[0] + ":" + s[1] + "-" + s[2];
+                createSlots(cuat, time, target);
+                return;
+            }
             var days = s[0].trim().split(',');
             if (days.length == 1 && days[0].length > 1) {
-            days = days[0];
+                days = days[0];
             }
             var start = 1*t[0].trim();
             if (start < 100) start *= 100;
@@ -84,13 +100,13 @@ pa.Topic = function(line, id) {
             }
         }
     }
-
+    
     var times = this.horario.split(';');
     this.slots = [];
     for (var i=0; i<times.length; i++) {
         createSlots(this.cuat, times[i], this.slots);
     }
-
+    
     // Gestión de proyectos software y metodologías = Gdpsym
     var nameParts = this.nombre.split(' ');
     var nameStarts = [];
@@ -102,7 +118,7 @@ pa.Topic = function(line, id) {
         }
     }
     this.acronym = nameStarts.join('') + ":" +id;
-	this.textAcronym = nameStarts.join('').toUpperCase();
+    this.textAcronym = nameStarts.join('').toUpperCase();
 }
 pa.Topic.prototype = {
     compatibleWith: function(other) {
@@ -198,7 +214,7 @@ pa.List = function(id, selector, menu, plan) {
     this.menu = menu;
     this.plan = plan;
     this.id = id;
-
+    
     var dest = $(selector);
     function makeRow(id, t) {
         var desc = t.curso + "-" + t.grupo + "-" + t.titulo + "-" + t.ctro + ": " + t.nombre;
@@ -208,9 +224,9 @@ pa.List = function(id, selector, menu, plan) {
         "<td>" + t.aula + "-" + t.edif + "</td>" +
         "<td>" + t.horario + " (" + t.cuat + ")</td>" +
         "<td title='" + (t.quien === "" ? "(no asignada)" : t.quien) +
-            " -- haz click aquí para cambiar disponibilidad" + 
-            "' class='x'>" + (t.quien === "" ? "&nbsp;" : "*") + "</td>" +
-            "<td title='" + t.interes.join(",") + " (Haz click aquí para cambiar tu interés)" + 
+        " -- haz click aquí para cambiar disponibilidad" + 
+        "' class='x'>" + (t.quien === "" ? "&nbsp;" : "*") + "</td>" +
+        "<td title='" + t.interes.join(",") + " (Haz click aquí para cambiar tu interés)" + 
         "' class='i'>" + t.interes.length +
         "</tr>\n");
         return row;
@@ -220,7 +236,7 @@ pa.List = function(id, selector, menu, plan) {
         var row = this.list.find("#" + this.id + topic.id);
         var cell = row.find("td.i");
         var topicTooltip = topic.interes.join(",") +                 
-                " (Haz click aquí para cambiar tu interés)";
+        " (Haz click aquí para cambiar tu interés)";
         cell.attr('title', topicTooltip);
         var popularity = topic.interes.length;
         if (topic.interes.indexOf(login)>=0) {
@@ -231,21 +247,21 @@ pa.List = function(id, selector, menu, plan) {
             row.addClass("notInt");
         }
     }
-
+    
     this.list = $("<table class='tm' id='" + id + "'><thead><tr>"
-        + "<th title='Abreviatura (generada automáticamente, en formato acronimo:nº de fila)'>abrev</th>"
-		+ "<th title='Plan, grupo y nombre de la asignatura'>grupo y nombre</th>"
-        + "<th title='Créditos, en formato teoría/prácticas'>creditos</th>"
-        + "<th title='Aula o laboratorio donde se imparte'>lugar</th>"
-        + "<th title='Entre paréntesis, el cuatrimestre'>horario</th>"
-		+ "<th title='Quien la tiene seleccionada; usa el cursor para ver el nombre. Ojo, no tiene en cuenta reservas'>Quién</th>"
-		+ "<th title='A quién le gustaría darla. Ojo, puede que los interesados acaben por hacer otra elección, y puede que no-interesados sí la cojan'>Interés</th>"		
-		+ "</tr></thead><tbody>\n"
-        + "</tbody></table>");
+    + "<th title='Abreviatura (generada automáticamente, en formato acronimo:nº de fila)'>abrev</th>"
+    + "<th title='Plan, grupo y nombre de la asignatura'>grupo y nombre</th>"
+    + "<th title='Créditos, en formato teoría/prácticas'>creditos</th>"
+    + "<th title='Aula o laboratorio donde se imparte'>lugar</th>"
+    + "<th title='Entre paréntesis, el cuatrimestre'>horario</th>"
+    + "<th title='Quien la tiene seleccionada; usa el cursor para ver el nombre. Ojo, no tiene en cuenta reservas'>Quién</th>"
+    + "<th title='A quién le gustaría darla. Ojo, puede que los interesados acaben por hacer otra elección, y puede que no-interesados sí la cojan'>Interés</th>"       
+    + "</tr></thead><tbody>\n"
+    + "</tbody></table>");
     for (var i=0; i<menu.topics.length; i++) {
         var row = makeRow(id, menu.topics[i])
         this.list.append(row);
-        row.data("topic", menu.topics[i]);	
+        row.data("topic", menu.topics[i]);  
     }
     dest.append(this.list);
 }
@@ -257,31 +273,31 @@ pa.TimeTable = function(id, selector, cuat, plan) {
     this.boxes = [];
     this.plan = plan;
     this.cuat = cuat;
-
+    
     var dest = $(selector);
     var rows = [];
-
+    
     function makeRow(start) {
         return "<tr>"
-            + "<td class='tt" + start + " tt" + cuat + " ttL" + "'></td>"
-            + "<td class='tt" + start + " tt" + cuat + " ttM" + "'></td>"
-            + "<td class='tt" + start + " tt" + cuat + " ttX" + "'></td>"
-            + "<td class='tt" + start + " tt" + cuat + " ttJ" + "'></td>"
-            + "<td class='tt" + start + " tt" + cuat + " ttV" + "'></td>"
-            + "<th class='tth'>" + (start/100) + "</th></tr>\n";
+        + "<td class='tt" + start + " tt" + cuat + " ttL" + "'></td>"
+        + "<td class='tt" + start + " tt" + cuat + " ttM" + "'></td>"
+        + "<td class='tt" + start + " tt" + cuat + " ttX" + "'></td>"
+        + "<td class='tt" + start + " tt" + cuat + " ttJ" + "'></td>"
+        + "<td class='tt" + start + " tt" + cuat + " ttV" + "'></td>"
+        + "<th class='tth'>" + (start/100) + "</th></tr>\n";
     }
     for (var i=800; i<=2100; i+=100) {
         rows.push(makeRow(i));
     }
-
+    
     this.tt = $("<div id='" + id + "' class='tt'><div class='ttinner'>\n"
-        + "<table><thead><tr>"
-        + "<th>L</th><th>M</th><th>X</th><th>J</th><th>V</th>"
-        + "<th></th>"
-        + "</tr></thead><tbody>\n"
-        + rows.join('')
-        + "</tbody></table>\n"
-        + "</div></div>");
+    + "<table><thead><tr>"
+    + "<th>L</th><th>M</th><th>X</th><th>J</th><th>V</th>"
+    + "<th></th>"
+    + "</tr></thead><tbody>\n"
+    + rows.join('')
+    + "</tbody></table>\n"
+    + "</div></div>");
     dest.append(this.tt);
     var tt = this.tt;
 }
@@ -299,14 +315,14 @@ pa.TimeTable.prototype = {
         if ( ! this.plan.compatible(topic)) {
             return; // son incompatibles
         }
-
+        
         function createBox(div, slot, topic) {
             var sc = div.find("td.tt" + slot.cuat + ".tt" + (slot.start-(slot.start%100)) + ".tt" + slot.day);
             var ec = div.find("td.tt" + slot.cuat + ".tt" + (slot.end-(slot.end%100)) + ".tt" + slot.day);
-
+            
             var box = $("<div class='ttb'>" + topic.acronym + "</div>");
             div.after(box);
-
+            
             var scp = sc.position();
             var ecp = ec.position();
             var top = scp.top + 1;
@@ -323,14 +339,14 @@ pa.TimeTable.prototype = {
             }
             top ++;
             left ++;
-
+            
             box.css({
                 top: top + "px", left: left + "px",
                 width: width + "px", height: height + "px"});
             box.data("topic", topic)
             return box;
         }
-
+        
         for (var i=0; i<topic.slots.length; i++) {
             var box = createBox(this.tt.find(".ttinner"), topic.slots[i], topic);
             if (box != null) this.boxes.push(box);

@@ -67,13 +67,17 @@ $(function() {
 </script>
 
 </head>
-<body>    
+<body> 
+    <h1>Administración</h1>
+
     <form id="formularioLogin" method="POST">
             <fieldset>
-                <label for="login">Login</label>
-                <input id="login" name="login" class=":required" type="text"/>
-                <label for="pass">Pass</label>
-                <input id="pass" name="pass" class=":required" type="password"/>
+                <label for="login">Login (eg.: prefijo de tu correo UCM antes de la @)</label>
+                <input id="login" name="login" type="text" required/>
+                <br>
+                <label for="pass">Contraseña Admin</label>
+                <input title="No uses una contraseña sensible" type="password" name="pass" id="l_pass" required />
+                <br>
                 <button name="submit" value="login" type="submit">Entrar ó registrarme</button>
 <?php if (isset($_SESSION['admin'])): ?>
                 (registrado como Administrador)
